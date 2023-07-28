@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  laravel8_app:
+    image: ubuntu:latest
+    container_name: laravel8_app
+    build:
+      context: .
+    expose:
+      - "8080"
+    volumes:
+      - ./src/laravel8:/home
+      - ./nginx/default:/etc/nginx/sites-available/default
+    environment:
+      TZ: Asia/Seoul
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+  db:
+    image: mysql:8.0.28
+    container_name: mysql8
+    environment:
+      MYSQL_ROOT_PASSWORD: love1004
+    #      TZ: Asia/Seoul
+    ports:
+      - "3356:3306"
+    volumes:
+      - db_data_volume:/var/lib/mysql
+      - ./mysql/config/my.cnf:/etc/mysql/my.cnf
+    restart: always
+    platform: linux/amd64
+  proxy:
+    image: nginx
+    container_name: app_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - laravel8_app
+    stdin_open: true
+    tty: true
+volumes:
+  db_data_volume:
